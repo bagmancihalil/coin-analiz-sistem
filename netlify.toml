@@ -1,4 +1,3 @@
 [build]
-  base = "coin_analiz"
   publish = "coin_analiz"
   command = ""
