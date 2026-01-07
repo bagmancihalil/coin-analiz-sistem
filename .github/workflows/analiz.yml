@@ -2,13 +2,14 @@ name: Otomatik Coin Analizi
 
 on:
   schedule:
-    # Her 15 dakikada bir çalıştır
     - cron: "*/15 * * * *"
-  workflow_dispatch: # Manuel olarak tetiklemek için
+  workflow_dispatch: 
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # 🟢 BU SATIR KRİTİK: GitHub'ın kendi dosyalarını güncelleyebilmesi için şart
     steps:
       - name: 1. Proje Dosyalarını Çek
         uses: actions/checkout@v3
@@ -21,18 +22,15 @@ jobs:
       - name: 3. Gerekli Kütüphaneleri Yükle
         run: |
           python -m pip install --upgrade pip
-          # "coin_backend" klasörünün içindeki requirements.txt'yi yükle
-          if [ -f coin_backend/requirements.txt ]; then pip install -r coin_backend/requirements.txt; fi
+          pip install requests pandas numpy
 
       - name: 4. Analiz Script'ini Çalıştır
-        run: |
-          # Kendi script adın "analyzer.py" olarak düzeltildi
-          python coin_backend/analyzer.py 
+        run: python coin_backend/analyzer.py 
 
       - name: 5. Değişiklikleri Repoya Yükle
         run: |
           git config --global user.name 'GitHub Action'
           git config --global user.email 'action@github.com'
-          # data.json'un "coin_backend" klasöründe olduğu düzeltildi
-          git add coin_backend/data.json 
-          git diff --quiet && git diff --staged --quiet || (git commit -m "📊 Otomatik analiz verileri güncellendi"; git push)
+          git add data.json
+          git commit -m "📊 Otomatik analiz verileri güncellendi" || echo "Değişiklik yok"
+          git push
